@@ -146,5 +146,24 @@ std::string MultiplyOperation::symbol() const { return "*"; }
 int AddOperation::apply(int a, int b) const { return a + b; }
 std::string AddOperation::symbol() const { return "+"; }
 
-int DivideOperation::apply(int a, int b) const { return b != 0 ? a / b : 0; }
+int DivideOperation::apply(int a, int b) const
+{
+    if (b == 0)
+    {
+        throw std::invalid_argument("Division by zero");
+    }
+
+    double result = static_cast<double>(a) / b;
+    std::string resultStr = std::to_string(result);
+
+    for (char c : resultStr)
+    {
+        if (c >= '1' && c <= '9')
+        {
+            return c - '0';
+        }
+    }
+
+    return 0;
+}
 std::string DivideOperation::symbol() const { return "/"; }
