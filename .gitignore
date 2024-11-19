@@ -33,4 +33,4 @@
 
 # dirs
 .vscode/
-.bin/
+bin/
