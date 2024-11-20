@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <utility>
 
 class ModeStrategy
 {
@@ -34,72 +35,86 @@ protected:
     std::vector<long long> m_costTime;
 };
 
-template <typename Operation>
 class ArithmeticMode : public BaseMode
 {
 public:
-    ArithmeticMode(int minA, int maxA, int minB, int maxB);
+    using Range = std::pair<int, int>;
+
+public:
+    template <typename... Args>
+    ArithmeticMode(Args... ranges);
 
 public:
     virtual void generateAndPrintQuestion() override;
 
 private:
-    std::random_device m_rd;
+    virtual std::string generateQuestion() = 0;
+    virtual std::string generateAnswer() = 0;
+
+protected:
+    std::vector<std::uniform_int_distribution<>> m_numDists;
     std::mt19937 m_gen;
-    std::uniform_int_distribution<> m_numADist;
-    std::uniform_int_distribution<> m_numBDist;
+
+private:
+    std::random_device m_rd;
 };
 
-template <typename Operation>
-ArithmeticMode<Operation>::ArithmeticMode(int minA, int maxA, int minB, int maxB)
-    : m_gen(m_rd()), m_numADist(minA, maxA), m_numBDist(minB, maxB){};
-
-template <typename Operation>
-void ArithmeticMode<Operation>::generateAndPrintQuestion()
-{
-    Operation op;
-
-    auto numA = m_numADist(m_gen);
-    auto numB = m_numBDist(m_gen);
-
-    auto questionStr = std::to_string(numA) + " " + op.symbol() + " " + std::to_string(numB);
-    // print question
-    std::cout << questionStr << std::endl;
-
-    m_question.push_back(questionStr);
-    m_answer.push_back(std::to_string(op.apply(numA, numB)));
-}
-
-class Operation
+class TwoDigitsTimesOneDigit : public ArithmeticMode
 {
 public:
-    virtual int apply(int a, int b) const = 0;
-    virtual std::string symbol() const = 0;
-    virtual ~Operation() {}
+    TwoDigitsTimesOneDigit();
+    virtual ~TwoDigitsTimesOneDigit() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1;
+    int m_num2;
 };
 
-class MultiplyOperation : public Operation
+class OneDigitPlusOneDigit : public ArithmeticMode
 {
 public:
-    int apply(int a, int b) const override;
-    std::string symbol() const override;
+    OneDigitPlusOneDigit();
+    virtual ~OneDigitPlusOneDigit() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1;
+    int m_num2;
 };
 
-class AddOperation : public Operation
+class OneDigitTimesOneDigit : public ArithmeticMode
 {
 public:
-    int apply(int a, int b) const override;
-    std::string symbol() const override;
+    OneDigitTimesOneDigit();
+    virtual ~OneDigitTimesOneDigit() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1;
+    int m_num2;
 };
 
-class DivideOperation : public Operation
+class ThreeDigitsDivideTwoDigits : public ArithmeticMode
 {
 public:
-    int apply(int a, int b) const override;
-    std::string symbol() const override;
-};
+    ThreeDigitsDivideTwoDigits();
+    virtual ~ThreeDigitsDivideTwoDigits() = default;
 
-using TwoDigitsTimesOneDigit = ArithmeticMode<MultiplyOperation>;
-using OneDigitPlusOneDigit = ArithmeticMode<AddOperation>;
-using OneDigitTimesOneDigit = ArithmeticMode<MultiplyOperation>;
-using ThreeDigitsDivideTwoDigits = ArithmeticMode<DivideOperation>;
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1;
+    int m_num2;
+};

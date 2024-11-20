@@ -126,8 +126,9 @@ void BaseMode::printStatics()
                              m_costTime.begin(), m_costTime.end(), 0)) /
                          1000 / m_costTime.size();
 
-    std::cout << "-------------------------" << std::endl;
+    std::cout << "-------------------------------------------" << std::endl;
 
+    std::cout << cyanStr("STATICS") << std::endl;
     std::cout << "correct count:   " << greenStr(std::to_string(correctCount)) << std::endl;
     std::cout << "wrong count:     " << redStr(std::to_string(m_response.size() - correctCount)) << std::endl;
     std::cout << "total count:     " << m_response.size() << std::endl;
@@ -137,33 +138,102 @@ void BaseMode::printStatics()
     std::cout << "equal cost time: " << std::fixed << std::setprecision(3)
               << equalCostTime << "s" << std::endl;
 
-    std::cout << "-------------------------" << std::endl;
+    std::cout << "-------------------------------------------" << std::endl;
 }
 
-int MultiplyOperation::apply(int a, int b) const { return a * b; }
-std::string MultiplyOperation::symbol() const { return "*"; }
-
-int AddOperation::apply(int a, int b) const { return a + b; }
-std::string AddOperation::symbol() const { return "+"; }
-
-int DivideOperation::apply(int a, int b) const
+template <typename... Args>
+ArithmeticMode::ArithmeticMode(Args... ranges) : m_numDists{std::uniform_int_distribution<>(ranges.first, ranges.second)...}
 {
-    if (b == 0)
+    auto seed = m_rd();
+    m_gen.seed(seed);
+}
+
+void ArithmeticMode::generateAndPrintQuestion()
+{
+    auto questionStr = generateQuestion();
+    std::cout << questionStr << std::endl;
+
+    auto answerStr = generateAnswer();
+    m_question.push_back(questionStr);
+    m_answer.push_back(answerStr);
+}
+
+TwoDigitsTimesOneDigit::TwoDigitsTimesOneDigit()
+    : ArithmeticMode(Range(11, 99), Range(2, 9)) {}
+
+std::string TwoDigitsTimesOneDigit::generateQuestion()
+{
+    m_num1 = m_numDists[0](m_gen);
+    m_num2 = m_numDists[1](m_gen);
+
+    return std::to_string(m_num1) + " * " + std::to_string(m_num2);
+}
+
+std::string TwoDigitsTimesOneDigit::generateAnswer()
+{
+    return std::to_string(m_num1 * m_num2);
+}
+
+OneDigitPlusOneDigit::OneDigitPlusOneDigit()
+    : ArithmeticMode(Range(1, 9), Range(1, 9)) {}
+
+std::string OneDigitPlusOneDigit::generateQuestion()
+{
+    m_num1 = m_numDists[0](m_gen);
+    m_num2 = m_numDists[1](m_gen);
+
+    return std::to_string(m_num1) + " + " + std::to_string(m_num2);
+}
+
+std::string OneDigitPlusOneDigit::generateAnswer()
+{
+    return std::to_string(m_num1 + m_num2);
+}
+
+OneDigitTimesOneDigit::OneDigitTimesOneDigit()
+    : ArithmeticMode(Range(1, 9), Range(1, 9)) {}
+
+std::string OneDigitTimesOneDigit::generateQuestion()
+{
+    m_num1 = m_numDists[0](m_gen);
+    m_num2 = m_numDists[1](m_gen);
+
+    return std::to_string(m_num1) + " * " + std::to_string(m_num2);
+}
+
+std::string OneDigitTimesOneDigit::generateAnswer()
+{
+    return std::to_string(m_num1 * m_num2);
+}
+
+ThreeDigitsDivideTwoDigits::ThreeDigitsDivideTwoDigits()
+    : ArithmeticMode(Range(10, 99), Range(100, 999)) {}
+
+std::string ThreeDigitsDivideTwoDigits::generateQuestion()
+{
+    m_num1 = m_numDists[0](m_gen);
+    m_num2 = m_numDists[1](m_gen);
+
+    return std::to_string(m_num1) + " 厂 " + std::to_string(m_num2);
+}
+
+std::string ThreeDigitsDivideTwoDigits::generateAnswer()
+{
+    if (m_num1 == 0)
     {
         throw std::invalid_argument("Division by zero");
     }
 
-    double result = static_cast<double>(a) / b;
+    double result = static_cast<double>(m_num2) / m_num1;
     std::string resultStr = std::to_string(result);
 
     for (char c : resultStr)
     {
         if (c >= '1' && c <= '9')
         {
-            return c - '0';
+            return std::to_string(c - '0');
         }
     }
 
-    return 0;
+    return std::to_string(0);
 }
-std::string DivideOperation::symbol() const { return "/"; }
