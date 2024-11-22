@@ -12,8 +12,9 @@ int main()
         std::cout << "2. one digits plus one digits : 1 + 2" << std::endl;
         std::cout << "3. one digits times one digits : 1 * 2" << std::endl;
         std::cout << "4. three digits divide two digits : 12 厂 123" << std::endl;
+        std::cout << "5. fraction compare : 1/2 ? 1/3" << std::endl;
 
-        std::cout << "please input mode (1 - 4), or input 'quit' to exit: ";
+        std::cout << "please input mode (1 - 5), or input 'quit' to exit: ";
         std::cin >> input;
 
         if (input == "quit")
@@ -37,6 +38,10 @@ int main()
         else if (input == "4")
         {
             context.setStrategy(std::make_unique<ThreeDigitsDivideTwoDigits>());
+        }
+        else if (input == "5")
+        {
+            context.setStrategy(std::make_unique<FractionCompare>());
         }
         else
         {

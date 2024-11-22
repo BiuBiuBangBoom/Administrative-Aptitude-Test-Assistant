@@ -93,6 +93,11 @@ bool BaseMode::processInput()
     return true;
 }
 
+bool BaseMode::checkAnswer(const int index)
+{
+    return m_response[index] == m_answer[index];
+}
+
 void BaseMode::printStatics()
 {
     int correctCount = 0;
@@ -109,7 +114,7 @@ void BaseMode::printStatics()
                   << static_cast<double>(m_costTime[i]) / 1000 << "s"
                   << std::endl;
 
-        if (m_response[i] == m_answer[i])
+        if (checkAnswer(i))
         {
             std::cout << greenStr("correct") << std::endl;
             correctCount++;
@@ -141,14 +146,18 @@ void BaseMode::printStatics()
     std::cout << "-------------------------------------------" << std::endl;
 }
 
-template <typename... Args>
-ArithmeticMode::ArithmeticMode(Args... ranges) : m_numDists{std::uniform_int_distribution<>(ranges.first, ranges.second)...}
+BaseModeWithRandom::BaseModeWithRandom()
 {
     auto seed = m_rd();
     m_gen.seed(seed);
 }
 
-void ArithmeticMode::generateAndPrintQuestion()
+template <typename... Args>
+RandomDistributionGenerator::RandomDistributionGenerator(Args... ranges) : m_numDists{std::uniform_int_distribution<>(ranges.first, ranges.second)...}
+{
+}
+
+void BaseMode::generateAndPrintQuestion()
 {
     auto questionStr = generateQuestion();
     std::cout << questionStr << std::endl;
@@ -159,7 +168,7 @@ void ArithmeticMode::generateAndPrintQuestion()
 }
 
 TwoDigitsTimesOneDigit::TwoDigitsTimesOneDigit()
-    : ArithmeticMode(Range(11, 99), Range(2, 9)) {}
+    : RandomDistributionGenerator(Range(11, 99), Range(2, 9)) {}
 
 std::string TwoDigitsTimesOneDigit::generateQuestion()
 {
@@ -175,7 +184,7 @@ std::string TwoDigitsTimesOneDigit::generateAnswer()
 }
 
 OneDigitPlusOneDigit::OneDigitPlusOneDigit()
-    : ArithmeticMode(Range(1, 9), Range(1, 9)) {}
+    : RandomDistributionGenerator(Range(1, 9), Range(1, 9)) {}
 
 std::string OneDigitPlusOneDigit::generateQuestion()
 {
@@ -191,7 +200,7 @@ std::string OneDigitPlusOneDigit::generateAnswer()
 }
 
 OneDigitTimesOneDigit::OneDigitTimesOneDigit()
-    : ArithmeticMode(Range(1, 9), Range(1, 9)) {}
+    : RandomDistributionGenerator(Range(1, 9), Range(1, 9)) {}
 
 std::string OneDigitTimesOneDigit::generateQuestion()
 {
@@ -207,7 +216,7 @@ std::string OneDigitTimesOneDigit::generateAnswer()
 }
 
 ThreeDigitsDivideTwoDigits::ThreeDigitsDivideTwoDigits()
-    : ArithmeticMode(Range(10, 99), Range(100, 999)) {}
+    : RandomDistributionGenerator(Range(10, 99), Range(100, 999)) {}
 
 std::string ThreeDigitsDivideTwoDigits::generateQuestion()
 {
@@ -236,4 +245,55 @@ std::string ThreeDigitsDivideTwoDigits::generateAnswer()
     }
 
     return std::to_string(0);
+}
+
+FractionCompare::FractionCompare()
+    : RandomDistributionGenerator(Range(10000, 100000), Range(0, 2)) {}
+
+std::string FractionCompare::generateQuestion()
+{
+    auto digitsGapBetweentND = m_numDists[1](m_gen);
+    auto digitsGapBetweentFractions = m_numDists[1](m_gen);
+
+    m_num1Denominator = m_numDists[0](m_gen);
+    m_num2Denominator = m_numDists[0](m_gen);
+
+    m_num2Denominator /= static_cast<int>(std::pow(10, digitsGapBetweentFractions));
+
+    if (digitsGapBetweentND == 0)
+    {
+        std::uniform_int_distribution<> num1NumeratorDis(10000, m_num1Denominator - 1);
+        std::uniform_int_distribution<> num2NumeratorDis(10000, m_num2Denominator - 1);
+
+        m_num1Numerator = num1NumeratorDis(m_gen);
+        m_num2Numerator = num2NumeratorDis(m_gen);
+    }
+    else
+    {
+        m_num1Numerator = static_cast<double>(m_numDists[0](m_gen)) / static_cast<int>(std::pow(10, digitsGapBetweentND));
+        m_num2Numerator = static_cast<double>(m_numDists[0](m_gen)) / static_cast<int>(std::pow(10, digitsGapBetweentND + digitsGapBetweentFractions));
+    }
+
+    return std::to_string(m_num1Numerator) + "/" + std::to_string(m_num1Denominator) + " ? " +
+           std::to_string(m_num2Numerator) + "/" + std::to_string(m_num2Denominator);
+}
+
+std::string FractionCompare::generateAnswer()
+{
+    double result1 = static_cast<double>(m_num1Numerator) / m_num1Denominator;
+    double result2 = static_cast<double>(m_num2Numerator) / m_num2Denominator;
+
+    auto symbol = result1 > result2 ? ">" : result1 < result2 ? "<"
+                                                              : "=";
+
+    std::string answer(symbol);
+
+    answer += " " + std::to_string(result1) + " " + symbol + " " + std::to_string(result2);
+
+    return answer;
+}
+
+bool FractionCompare::checkAnswer(const int index)
+{
+    return m_response[index][0] == m_answer[index][0];
 }

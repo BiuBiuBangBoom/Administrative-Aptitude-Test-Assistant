@@ -15,6 +15,7 @@ class ModeStrategy
 {
 public:
     virtual void execute() = 0;
+
     virtual ~ModeStrategy() = default;
 };
 
@@ -24,42 +25,53 @@ public:
     virtual void execute() override;
 
 private:
-    virtual void generateAndPrintQuestion() = 0;
+    virtual void generateAndPrintQuestion();
+
     bool processInput();
+
     void printStatics();
+
+    virtual std::string generateQuestion() = 0;
+
+    virtual std::string generateAnswer() = 0;
+
+    virtual bool checkAnswer(const int index);
 
 protected:
     std::vector<std::string> m_question;
+
     std::vector<std::string> m_answer;
+
     std::vector<std::string> m_response;
+
     std::vector<long long> m_costTime;
 };
 
-class ArithmeticMode : public BaseMode
+class BaseModeWithRandom : public BaseMode
+{
+public:
+    BaseModeWithRandom();
+    virtual ~BaseModeWithRandom() = default;
+
+protected:
+    std::mt19937 m_gen;
+    std::random_device m_rd;
+};
+
+class RandomDistributionGenerator : public BaseModeWithRandom
 {
 public:
     using Range = std::pair<int, int>;
 
 public:
     template <typename... Args>
-    ArithmeticMode(Args... ranges);
-
-public:
-    virtual void generateAndPrintQuestion() override;
-
-private:
-    virtual std::string generateQuestion() = 0;
-    virtual std::string generateAnswer() = 0;
+    RandomDistributionGenerator(Args... ranges);
 
 protected:
     std::vector<std::uniform_int_distribution<>> m_numDists;
-    std::mt19937 m_gen;
-
-private:
-    std::random_device m_rd;
 };
 
-class TwoDigitsTimesOneDigit : public ArithmeticMode
+class TwoDigitsTimesOneDigit : public RandomDistributionGenerator
 {
 public:
     TwoDigitsTimesOneDigit();
@@ -74,7 +86,7 @@ private:
     int m_num2;
 };
 
-class OneDigitPlusOneDigit : public ArithmeticMode
+class OneDigitPlusOneDigit : public RandomDistributionGenerator
 {
 public:
     OneDigitPlusOneDigit();
@@ -89,7 +101,7 @@ private:
     int m_num2;
 };
 
-class OneDigitTimesOneDigit : public ArithmeticMode
+class OneDigitTimesOneDigit : public RandomDistributionGenerator
 {
 public:
     OneDigitTimesOneDigit();
@@ -104,7 +116,7 @@ private:
     int m_num2;
 };
 
-class ThreeDigitsDivideTwoDigits : public ArithmeticMode
+class ThreeDigitsDivideTwoDigits : public RandomDistributionGenerator
 {
 public:
     ThreeDigitsDivideTwoDigits();
@@ -117,4 +129,22 @@ private:
 private:
     int m_num1;
     int m_num2;
+};
+
+class FractionCompare : public RandomDistributionGenerator
+{
+public:
+    FractionCompare();
+    virtual ~FractionCompare() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+    virtual bool checkAnswer(const int index) override;
+
+private:
+    int m_num1Numerator;
+    int m_num1Denominator;
+    int m_num2Numerator;
+    int m_num2Denominator;
 };
