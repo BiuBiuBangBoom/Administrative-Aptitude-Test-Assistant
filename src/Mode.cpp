@@ -263,7 +263,7 @@ std::string FractionCompare::generateQuestion()
     if (digitsGapBetweentND == 0)
     {
         std::uniform_int_distribution<> num1NumeratorDis(10000, m_num1Denominator - 1);
-        std::uniform_int_distribution<> num2NumeratorDis(10000, m_num2Denominator - 1);
+        std::uniform_int_distribution<> num2NumeratorDis(10000 / std::pow(10, digitsGapBetweentFractions), m_num2Denominator - 1);
 
         m_num1Numerator = num1NumeratorDis(m_gen);
         m_num2Numerator = num2NumeratorDis(m_gen);
@@ -274,8 +274,21 @@ std::string FractionCompare::generateQuestion()
         m_num2Numerator = static_cast<double>(m_numDists[0](m_gen)) / static_cast<int>(std::pow(10, digitsGapBetweentND + digitsGapBetweentFractions));
     }
 
-    return std::to_string(m_num1Numerator) + "/" + std::to_string(m_num1Denominator) + " ? " +
-           std::to_string(m_num2Numerator) + "/" + std::to_string(m_num2Denominator);
+    // print fraction with the stye of numerator1        numerator2
+    //                                 -----------   ?   -----------
+    //                                 denominator1      denominator2
+    // the numerator1 and denominator1 are supposed to be aligned left
+    // the numerator2 and denominator2 are supposed to be aligned left
+    // the ? is supposed to be aligned center
+    std::ostringstream oss;
+    oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << "\n"
+        << std::setw(10) << std::left << "-----------" << "   ?   " << std::setw(10) << std::left << "-----------" << "\n"
+        << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator;
+    return oss.str();
+
+    // return std::to_string(m_num1Numerator) +
+    // "/" + std::to_string(m_num1Denominator) + " ? " +
+    // std::to_string(m_num2Numerator) + "/" + std::to_string(m_num2Denominator);
 }
 
 std::string FractionCompare::generateAnswer()
@@ -283,8 +296,8 @@ std::string FractionCompare::generateAnswer()
     double result1 = static_cast<double>(m_num1Numerator) / m_num1Denominator;
     double result2 = static_cast<double>(m_num2Numerator) / m_num2Denominator;
 
-    auto symbol = result1 > result2 ? ">" : result1 < result2 ? "<"
-                                                              : "=";
+    auto symbol = result1 > result2 ? "(>)" : result1 < result2 ? "(<)"
+                                                                : "(=)";
 
     std::string answer(symbol);
 
@@ -295,5 +308,5 @@ std::string FractionCompare::generateAnswer()
 
 bool FractionCompare::checkAnswer(const int index)
 {
-    return m_response[index][0] == m_answer[index][0];
+    return m_response[index][0] == m_answer[index][1];
 }
