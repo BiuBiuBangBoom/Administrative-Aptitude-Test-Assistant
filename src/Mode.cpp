@@ -1,72 +1,23 @@
 #include "Mode.h"
+#include "Common.h"
 
-#define RESET_COLOR_FONT "\033[0m"
-#define BLACK_COLOR_FONT "\033[30m"              /* Black */
-#define RED_COLOR_FONT "\033[31m"                /* Red */
-#define GREEN_COLOR_FONT "\033[32m"              /* Green */
-#define YELLOW_COLOR_FONT "\033[33m"             /* Yellow */
-#define BLUE_COLOR_FONT "\033[34m"               /* Blue */
-#define MAGENTA_COLOR_FONT "\033[35m"            /* Magenta */
-#define CYAN_COLOR_FONT "\033[36m"               /* Cyan */
-#define WHITE_COLOR_FONT "\033[37m"              /* White */
-#define BOLDBLACK_COLOR_FONT "\033[1m\033[30m"   /* Bold Black */
-#define BOLDRED_COLOR_FONT "\033[1m\033[31m"     /* Bold Red */
-#define BOLDGREEN_COLOR_FONT "\033[1m\033[32m"   /* Bold Green */
-#define BOLDYELLOW_COLOR_FONT "\033[1m\033[33m"  /* Bold Yellow */
-#define BOLDBLUE_COLOR_FONT "\033[1m\033[34m"    /* Bold Blue */
-#define BOLDMAGENTA_COLOR_FONT "\033[1m\033[35m" /* Bold Magenta */
-#define BOLDCYAN_COLOR_FONT "\033[1m\033[36m"    /* Bold Cyan */
-#define BOLDWHITE_COLOR_FONT "\033[1m\033[37m"   /* Bold White */
-
-// utility functions
-// generate color font string with given color
-std::string greenStr(std::string str)
+void ModeStrategy::setStrategy(std::unique_ptr<ModeStrategy> strategy)
 {
-    return GREEN_COLOR_FONT + str + RESET_COLOR_FONT;
+    m_questionMode = std::move(strategy);
 }
 
-std::string redStr(std::string str)
-{
-    return RED_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string yellowStr(std::string str)
-{
-    return YELLOW_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string blueStr(std::string str)
-{
-    return BLUE_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string magentaStr(std::string str)
-{
-    return MAGENTA_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string cyanStr(std::string str)
-{
-    return CYAN_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string whiteStr(std::string str)
-{
-    return WHITE_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-void BaseMode::execute()
+void ExaminationMode::executeStrategy()
 {
     bool continueFlag = true;
 
     while (continueFlag)
     {
-        generateAndPrintQuestion();
+        m_questionMode->generateAndPrintQuestion();
 
-        continueFlag = processInput();
+        continueFlag = m_questionMode->processInput();
     }
 
-    printStatics();
+    m_questionMode->printStatics();
 }
 
 bool BaseMode::processInput()
@@ -281,14 +232,12 @@ std::string FractionCompare::generateQuestion()
     // the numerator2 and denominator2 are supposed to be aligned left
     // the ? is supposed to be aligned center
     std::ostringstream oss;
-    oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << "\n"
-        << std::setw(10) << std::left << "-----------" << "   ?   " << std::setw(10) << std::left << "-----------" << "\n"
+    oss << std::endl;
+    oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << std::endl
+        << std::setw(10) << std::left << "-----------" << "   ?   " << std::setw(10) << std::left << "-----------" << std::endl
         << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator;
-    return oss.str();
 
-    // return std::to_string(m_num1Numerator) +
-    // "/" + std::to_string(m_num1Denominator) + " ? " +
-    // std::to_string(m_num2Numerator) + "/" + std::to_string(m_num2Denominator);
+    return oss.str();
 }
 
 std::string FractionCompare::generateAnswer()
@@ -301,7 +250,7 @@ std::string FractionCompare::generateAnswer()
 
     std::string answer(symbol);
 
-    answer += " " + std::to_string(result1) + " " + symbol + " " + std::to_string(result2);
+    answer += " " + std::to_string(result1) + " " + symbol[1] + " " + std::to_string(result2);
 
     return answer;
 }

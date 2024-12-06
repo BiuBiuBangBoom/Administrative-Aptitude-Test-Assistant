@@ -14,17 +14,31 @@
 class ModeStrategy
 {
 public:
-    virtual void execute() = 0;
+    void setStrategy(std::unique_ptr<ModeStrategy> strategy);
+
+    virtual void executeStrategy() = 0;
 
     virtual ~ModeStrategy() = default;
+
+protected:
+    std::unique_ptr<BaseMode> m_questionMode;
 };
 
-class BaseMode : public ModeStrategy
+class ExaminationMode : public ModeStrategy
 {
 public:
-    virtual void execute() override;
+    virtual void executeStrategy() override;
+};
 
-private:
+class RunningMode : public ModeStrategy
+{
+public:
+    virtual void executeStrategy() override;
+};
+
+class BaseMode
+{
+public:
     virtual void generateAndPrintQuestion();
 
     bool processInput();
