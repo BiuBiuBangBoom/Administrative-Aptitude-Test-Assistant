@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <utility>
+#include <set>
 
 class BaseMode
 {
@@ -147,7 +148,8 @@ private:
     virtual bool checkAnswer(const int index) override;
 
 private:
-    int m_percentage{0};
+    std::set<double> m_fractionsDict;
+    double m_percentage{0};
 };
 
 class ModeStrategy

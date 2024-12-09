@@ -1,6 +1,8 @@
 #include "Mode.h"
 #include "Common.h"
 
+#include <vector>
+
 void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
 {
     m_mode = std::move(mode);
@@ -312,16 +314,55 @@ bool FractionCompare::checkAnswer(const int index)
 }
 
 PercentageConvertToFraction::PercentageConvertToFraction()
-    : RandomDistributionGenerator(Range(500, 2000)) {}
+    : RandomDistributionGenerator(Range(500, 2000))
+{
+    for (double i = 5; i <= 20; i = i + 0.5)
+    {
+        m_fractionsDict.insert(i);
+    }
+}
 
 std::string PercentageConvertToFraction::generateQuestion()
 {
-    m_percentage = m_numDists[0](m_gen);
+    // use 2 valuable digits to represent the percentage
+    m_percentage = m_numDists[0](m_gen) / 100.0;
 
-    return std::to_string(static_cast<double>(m_percentage) / 100) + "%";
+    return std::to_string(static_cast<double>(m_percentage)) + "%";
 }
 
 std::string PercentageConvertToFraction::generateAnswer()
 {
-    return std::to_string(m_percentage) + "/100";
+    std::string res;
+    auto target = 100 / static_cast<double>(m_percentage);
+    std::cout << "target: " << target << std::endl;
+
+    auto lower = m_fractionsDict.lower_bound(target);
+
+    if (lower == m_fractionsDict.end())
+    {
+        res = std::to_string(*(std::prev(lower)));
+    }
+
+    if (lower == m_fractionsDict.begin())
+    {
+        res = std::to_string(*lower);
+    }
+
+    auto prev = std::prev(lower);
+
+    if (std::abs(*prev - target) < std::abs(*lower - target))
+    {
+        res = std::to_string(*prev);
+    }
+    else
+    {
+        res = std::to_string(*lower);
+    }
+
+    return res;
+}
+
+bool PercentageConvertToFraction::checkAnswer(const int index)
+{
+    return std::stod(m_response[index]) == std::stod(m_answer[index]);
 }

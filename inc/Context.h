@@ -13,7 +13,4 @@ public:
     std::unique_ptr<ModeStrategy> &getStrategy();
 
     void executeStrategy();
-
-private:
-    std::unique_ptr<ModeStrategy> m_strategy;
 };
