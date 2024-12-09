@@ -11,20 +11,9 @@
 #include <iostream>
 #include <utility>
 
-class ModeStrategy
+class BaseMode
 {
 public:
-    virtual void execute() = 0;
-
-    virtual ~ModeStrategy() = default;
-};
-
-class BaseMode : public ModeStrategy
-{
-public:
-    virtual void execute() override;
-
-private:
     virtual void generateAndPrintQuestion();
 
     bool processInput();
@@ -37,13 +26,10 @@ private:
 
     virtual bool checkAnswer(const int index);
 
-protected:
+public:
     std::vector<std::string> m_question;
-
     std::vector<std::string> m_answer;
-
     std::vector<std::string> m_response;
-
     std::vector<long long> m_costTime;
 };
 
@@ -147,4 +133,52 @@ private:
     int m_num1Denominator;
     int m_num2Numerator;
     int m_num2Denominator;
+};
+
+class PercentageConvertToFraction : public RandomDistributionGenerator
+{
+public:
+    PercentageConvertToFraction();
+    virtual ~PercentageConvertToFraction() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+    virtual bool checkAnswer(const int index) override;
+
+private:
+    int m_percentage{0};
+};
+
+class ModeStrategy
+{
+public:
+    virtual void execute() = 0;
+
+    virtual void setMode(std::unique_ptr<BaseMode> mode);
+
+    virtual ~ModeStrategy() = default;
+
+protected:
+    std::unique_ptr<BaseMode> m_mode{nullptr};
+};
+
+class RunningMode : public ModeStrategy
+{
+public:
+    RunningMode() = default;
+
+    virtual ~RunningMode() = default;
+
+    virtual void execute() override;
+};
+
+class ExaminationMode : public ModeStrategy
+{
+public:
+    ExaminationMode() = default;
+
+    virtual ~ExaminationMode() = default;
+
+    virtual void execute() override;
 };

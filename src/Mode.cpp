@@ -1,72 +1,68 @@
 #include "Mode.h"
+#include "Common.h"
 
-#define RESET_COLOR_FONT "\033[0m"
-#define BLACK_COLOR_FONT "\033[30m"              /* Black */
-#define RED_COLOR_FONT "\033[31m"                /* Red */
-#define GREEN_COLOR_FONT "\033[32m"              /* Green */
-#define YELLOW_COLOR_FONT "\033[33m"             /* Yellow */
-#define BLUE_COLOR_FONT "\033[34m"               /* Blue */
-#define MAGENTA_COLOR_FONT "\033[35m"            /* Magenta */
-#define CYAN_COLOR_FONT "\033[36m"               /* Cyan */
-#define WHITE_COLOR_FONT "\033[37m"              /* White */
-#define BOLDBLACK_COLOR_FONT "\033[1m\033[30m"   /* Bold Black */
-#define BOLDRED_COLOR_FONT "\033[1m\033[31m"     /* Bold Red */
-#define BOLDGREEN_COLOR_FONT "\033[1m\033[32m"   /* Bold Green */
-#define BOLDYELLOW_COLOR_FONT "\033[1m\033[33m"  /* Bold Yellow */
-#define BOLDBLUE_COLOR_FONT "\033[1m\033[34m"    /* Bold Blue */
-#define BOLDMAGENTA_COLOR_FONT "\033[1m\033[35m" /* Bold Magenta */
-#define BOLDCYAN_COLOR_FONT "\033[1m\033[36m"    /* Bold Cyan */
-#define BOLDWHITE_COLOR_FONT "\033[1m\033[37m"   /* Bold White */
-
-// utility functions
-// generate color font string with given color
-std::string greenStr(std::string str)
+void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
 {
-    return GREEN_COLOR_FONT + str + RESET_COLOR_FONT;
+    m_mode = std::move(mode);
 }
 
-std::string redStr(std::string str)
-{
-    return RED_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string yellowStr(std::string str)
-{
-    return YELLOW_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string blueStr(std::string str)
-{
-    return BLUE_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string magentaStr(std::string str)
-{
-    return MAGENTA_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string cyanStr(std::string str)
-{
-    return CYAN_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-std::string whiteStr(std::string str)
-{
-    return WHITE_COLOR_FONT + str + RESET_COLOR_FONT;
-}
-
-void BaseMode::execute()
+void RunningMode::execute()
 {
     bool continueFlag = true;
+    auto index = 0;
 
     while (continueFlag)
     {
-        generateAndPrintQuestion();
+        std::cout << "question " << index + 1 << std::endl;
 
-        continueFlag = processInput();
+        m_mode->generateAndPrintQuestion();
+        continueFlag = m_mode->processInput();
+
+        if (continueFlag)
+        {
+            std::cout << "correct answer: " << m_mode->m_answer[index] << std::endl;
+            std::cout << "cost time:      " << std::fixed << std::setprecision(3)
+                      << static_cast<double>(m_mode->m_costTime[index]) / 1000 << "s"
+                      << std::endl;
+
+            if (m_mode->checkAnswer(index))
+            {
+                std::cout << greenStr("correct") << std::endl;
+            }
+            else
+            {
+                std::cout << redStr("wrong") << std::endl;
+            }
+        }
+
+        std::cout << "-------------------------------------------" << std::endl;
+
+        index++;
     }
 
-    printStatics();
+    m_mode->printStatics();
+}
+
+void ExaminationMode::execute()
+{
+    bool continueFlag = true;
+
+    auto index = 0;
+
+    while (continueFlag)
+    {
+        std::cout << "question " << index + 1 << std::endl;
+
+        m_mode->generateAndPrintQuestion();
+
+        continueFlag = m_mode->processInput();
+
+        std::cout << "-------------------------------------------" << std::endl;
+
+        index++;
+    }
+
+    m_mode->printStatics();
 }
 
 bool BaseMode::processInput()
@@ -107,7 +103,14 @@ void BaseMode::printStatics()
         std::cout << "************************************" << std::endl;
 
         std::cout << "question " << i + 1 << std::endl;
-        std::cout << "question:       " << m_question[i] << std::endl;
+        std::cout << "question:       ";
+
+        if (dynamic_cast<FractionCompare *>(this))
+        {
+            std::cout << std::endl;
+        }
+
+        std::cout << m_question[i] << std::endl;
         std::cout << "your answer:    " << m_response[i] << std::endl;
         std::cout << "correct answer: " << m_answer[i] << std::endl;
         std::cout << "cost time:      " << std::fixed << std::setprecision(3)
@@ -282,13 +285,9 @@ std::string FractionCompare::generateQuestion()
     // the ? is supposed to be aligned center
     std::ostringstream oss;
     oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << "\n"
-        << std::setw(10) << std::left << "-----------" << "   ?   " << std::setw(10) << std::left << "-----------" << "\n"
+        << std::setw(10) << std::left << "------" << "   ?   " << std::setw(10) << std::left << "------" << "\n"
         << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator;
     return oss.str();
-
-    // return std::to_string(m_num1Numerator) +
-    // "/" + std::to_string(m_num1Denominator) + " ? " +
-    // std::to_string(m_num2Numerator) + "/" + std::to_string(m_num2Denominator);
 }
 
 std::string FractionCompare::generateAnswer()
@@ -309,4 +308,19 @@ std::string FractionCompare::generateAnswer()
 bool FractionCompare::checkAnswer(const int index)
 {
     return m_response[index][0] == m_answer[index][1];
+}
+
+PercentageConvertToFraction::PercentageConvertToFraction()
+    : RandomDistributionGenerator(Range(500, 2000)) {}
+
+std::string PercentageConvertToFraction::generateQuestion()
+{
+    m_percentage = m_numDists[0](m_gen);
+
+    return std::to_string(static_cast<double>(m_percentage) / 100) + "%";
+}
+
+std::string PercentageConvertToFraction::generateAnswer()
+{
+    return std::to_string(m_percentage) + "/100";
 }
