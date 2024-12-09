@@ -1,23 +1,68 @@
 #include "Mode.h"
 #include "Common.h"
 
-void ModeStrategy::setStrategy(std::unique_ptr<ModeStrategy> strategy)
+void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
 {
-    m_questionMode = std::move(strategy);
+    m_mode = std::move(mode);
 }
 
-void ExaminationMode::executeStrategy()
+void RunningMode::execute()
 {
     bool continueFlag = true;
+    auto index = 0;
 
     while (continueFlag)
     {
-        m_questionMode->generateAndPrintQuestion();
+        std::cout << "question " << index + 1 << std::endl;
 
-        continueFlag = m_questionMode->processInput();
+        m_mode->generateAndPrintQuestion();
+        continueFlag = m_mode->processInput();
+
+        if (continueFlag)
+        {
+            std::cout << "correct answer: " << m_mode->m_answer[index] << std::endl;
+            std::cout << "cost time:      " << std::fixed << std::setprecision(3)
+                      << static_cast<double>(m_mode->m_costTime[index]) / 1000 << "s"
+                      << std::endl;
+
+            if (m_mode->checkAnswer(index))
+            {
+                std::cout << greenStr("correct") << std::endl;
+            }
+            else
+            {
+                std::cout << redStr("wrong") << std::endl;
+            }
+        }
+
+        std::cout << "-------------------------------------------" << std::endl;
+
+        index++;
     }
 
-    m_questionMode->printStatics();
+    m_mode->printStatics();
+}
+
+void ExaminationMode::execute()
+{
+    bool continueFlag = true;
+
+    auto index = 0;
+
+    while (continueFlag)
+    {
+        std::cout << "question " << index + 1 << std::endl;
+
+        m_mode->generateAndPrintQuestion();
+
+        continueFlag = m_mode->processInput();
+
+        std::cout << "-------------------------------------------" << std::endl;
+
+        index++;
+    }
+
+    m_mode->printStatics();
 }
 
 bool BaseMode::processInput()
@@ -58,7 +103,14 @@ void BaseMode::printStatics()
         std::cout << "************************************" << std::endl;
 
         std::cout << "question " << i + 1 << std::endl;
-        std::cout << "question:       " << m_question[i] << std::endl;
+        std::cout << "question:       ";
+
+        if (dynamic_cast<FractionCompare *>(this))
+        {
+            std::cout << std::endl;
+        }
+
+        std::cout << m_question[i] << std::endl;
         std::cout << "your answer:    " << m_response[i] << std::endl;
         std::cout << "correct answer: " << m_answer[i] << std::endl;
         std::cout << "cost time:      " << std::fixed << std::setprecision(3)
@@ -232,9 +284,8 @@ std::string FractionCompare::generateQuestion()
     // the numerator2 and denominator2 are supposed to be aligned left
     // the ? is supposed to be aligned center
     std::ostringstream oss;
-    oss << std::endl;
-    oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << std::endl
-        << std::setw(10) << std::left << "-----------" << "   ?   " << std::setw(10) << std::left << "-----------" << std::endl
+    oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << "\n"
+        << std::setw(10) << std::left << "------" << "   ?   " << std::setw(10) << std::left << "------" << "\n"
         << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator;
 
     return oss.str();
@@ -258,4 +309,19 @@ std::string FractionCompare::generateAnswer()
 bool FractionCompare::checkAnswer(const int index)
 {
     return m_response[index][0] == m_answer[index][1];
+}
+
+PercentageConvertToFraction::PercentageConvertToFraction()
+    : RandomDistributionGenerator(Range(500, 2000)) {}
+
+std::string PercentageConvertToFraction::generateQuestion()
+{
+    m_percentage = m_numDists[0](m_gen);
+
+    return std::to_string(static_cast<double>(m_percentage) / 100) + "%";
+}
+
+std::string PercentageConvertToFraction::generateAnswer()
+{
+    return std::to_string(m_percentage) + "/100";
 }

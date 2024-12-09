@@ -12,3 +12,8 @@ void Context::executeStrategy()
         m_strategy->execute();
     }
 }
+
+std::unique_ptr<ModeStrategy> &Context::getStrategy()
+{
+    return m_strategy;
+}
