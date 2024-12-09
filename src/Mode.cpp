@@ -2,6 +2,7 @@
 #include "Common.h"
 
 #include <vector>
+#include <sstream>
 
 void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
 {
@@ -285,7 +286,7 @@ std::string FractionCompare::generateQuestion()
     // the numerator1 and denominator1 are supposed to be aligned left
     // the numerator2 and denominator2 are supposed to be aligned left
     // the ? is supposed to be aligned center
-    std::ostringstream oss;
+    std::stringstream oss;
     oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << "\n"
         << std::setw(10) << std::left << "------" << "   ?   " << std::setw(10) << std::left << "------" << "\n"
         << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator;

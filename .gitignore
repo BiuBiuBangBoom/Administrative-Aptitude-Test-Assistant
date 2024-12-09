@@ -34,3 +34,6 @@
 # dirs
 .vscode/
 bin/
+
+# User-specific files
+.DS_Store

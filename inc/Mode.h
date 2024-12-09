@@ -15,6 +15,9 @@
 class BaseMode
 {
 public:
+    BaseMode() = default;
+    virtual ~BaseMode() = default;
+
     virtual void generateAndPrintQuestion();
 
     bool processInput();
