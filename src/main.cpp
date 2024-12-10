@@ -11,8 +11,9 @@ int main()
     {
         std::cout << "mode list:" << std::endl;
         std::cout << "1. running mode" << std::endl;
-        std::cout << "2. examination mode" << std::endl;
-        std::cout << "please input mode (1 - 2), or input 'quit' to exit: ";
+        std::cout << "2. running and test mode" << std::endl;
+        std::cout << "3. examination mode" << std::endl;
+        std::cout << "please input mode (1 - 3), or input 'quit' to exit: ";
         std::cin >> input;
 
         if (input == "quit")
@@ -26,6 +27,10 @@ int main()
             context.setStrategy(std::make_unique<RunningMode>());
         }
         else if (input == "2")
+        {
+            context.setStrategy(std::make_unique<RunningAndTestMode>());
+        }
+        else if (input == "3")
         {
             context.setStrategy(std::make_unique<ExaminationMode>());
         }

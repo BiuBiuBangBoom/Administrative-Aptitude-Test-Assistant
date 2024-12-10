@@ -9,6 +9,40 @@ void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
     m_mode = std::move(mode);
 }
 
+bool ModeStrategy::processInput()
+{
+    std::string str;
+    std::cout << "input:";
+
+    // clear input cache for the first time input after start
+    static bool onStart = true;
+
+    if (onStart)
+    {
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.clear();
+        onStart = false;
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+    std::getline(std::cin, str);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    if (str == "quit")
+    {
+        return false;
+    }
+
+    auto costTime =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+            .count();
+
+    m_mode->m_costTime.push_back(costTime);
+    m_mode->m_response.push_back(str);
+
+    return true;
+}
+
 void RunningMode::execute()
 {
     bool continueFlag = true;
@@ -16,10 +50,38 @@ void RunningMode::execute()
 
     while (continueFlag)
     {
+        std::cout << "-------------------------------------------" << std::endl;
+
         std::cout << "question " << index + 1 << std::endl;
 
         m_mode->generateAndPrintQuestion();
-        continueFlag = m_mode->processInput();
+        continueFlag = processInput();
+
+        if (continueFlag)
+        {
+            std::cout << "correct answer: " << m_mode->m_answer[index] << std::endl;
+            std::cout << "cost time:      " << std::fixed << std::setprecision(3)
+                      << static_cast<double>(m_mode->m_costTime[index]) / 1000 << "s"
+                      << std::endl;
+        }
+
+        index++;
+    }
+}
+
+void RunningAndTestMode::execute()
+{
+    bool continueFlag = true;
+    auto index = 0;
+
+    while (continueFlag)
+    {
+        std::cout << "-------------------------------------------" << std::endl;
+
+        std::cout << "question " << index + 1 << std::endl;
+
+        m_mode->generateAndPrintQuestion();
+        continueFlag = processInput();
 
         if (continueFlag)
         {
@@ -37,8 +99,6 @@ void RunningMode::execute()
                 std::cout << redStr("wrong") << std::endl;
             }
         }
-
-        std::cout << "-------------------------------------------" << std::endl;
 
         index++;
     }
@@ -58,7 +118,7 @@ void ExaminationMode::execute()
 
         m_mode->generateAndPrintQuestion();
 
-        continueFlag = m_mode->processInput();
+        continueFlag = processInput();
 
         std::cout << "-------------------------------------------" << std::endl;
 
@@ -66,30 +126,6 @@ void ExaminationMode::execute()
     }
 
     m_mode->printStatics();
-}
-
-bool BaseMode::processInput()
-{
-    std::string str;
-    std::cout << "input:";
-
-    auto start = std::chrono::high_resolution_clock::now();
-    std::cin >> str;
-    auto end = std::chrono::high_resolution_clock::now();
-
-    if (str == "quit")
-    {
-        return false;
-    }
-
-    auto costTime =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
-            .count();
-
-    m_costTime.push_back(costTime);
-    m_response.push_back(str);
-
-    return true;
 }
 
 bool BaseMode::checkAnswer(const int index)
@@ -289,7 +325,7 @@ std::string FractionCompare::generateQuestion()
     std::stringstream oss;
     oss << std::setw(10) << std::left << m_num1Numerator << "        " << std::setw(10) << std::left << m_num2Numerator << "\n"
         << std::setw(10) << std::left << "------" << "   ?   " << std::setw(10) << std::left << "------" << "\n"
-        << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator;
+        << std::setw(10) << std::left << m_num1Denominator << "        " << std::setw(10) << std::left << m_num2Denominator << "\n";
 
     return oss.str();
 }
@@ -335,8 +371,6 @@ std::string PercentageConvertToFraction::generateAnswer()
 {
     std::string res;
     auto target = 100 / static_cast<double>(m_percentage);
-    std::cout << "target: " << target << std::endl;
-
     auto lower = m_fractionsDict.lower_bound(target);
 
     if (lower == m_fractionsDict.end())
@@ -360,10 +394,14 @@ std::string PercentageConvertToFraction::generateAnswer()
         res = std::to_string(*lower);
     }
 
+    res += " true value: " + std::to_string(target);
     return res;
 }
 
 bool PercentageConvertToFraction::checkAnswer(const int index)
 {
-    return std::stod(m_response[index]) == std::stod(m_answer[index]);
+    std::istringstream iss(m_response[index]);
+    std::string fractionStr;
+    iss >> fractionStr;
+    return std::stod(m_response[index]) == std::stod(fractionStr);
 }

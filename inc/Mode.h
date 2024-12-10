@@ -20,8 +20,6 @@ public:
 
     virtual void generateAndPrintQuestion();
 
-    bool processInput();
-
     void printStatics();
 
     virtual std::string generateQuestion() = 0;
@@ -164,6 +162,8 @@ public:
 
     virtual ~ModeStrategy() = default;
 
+    virtual bool processInput();
+
 protected:
     std::unique_ptr<BaseMode> m_mode{nullptr};
 };
@@ -174,6 +174,16 @@ public:
     RunningMode() = default;
 
     virtual ~RunningMode() = default;
+
+    virtual void execute() override;
+};
+
+class RunningAndTestMode : public ModeStrategy
+{
+public:
+    RunningAndTestMode() = default;
+
+    virtual ~RunningAndTestMode() = default;
 
     virtual void execute() override;
 };
