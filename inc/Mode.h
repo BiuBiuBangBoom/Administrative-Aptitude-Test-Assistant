@@ -153,6 +153,39 @@ private:
     double m_percentage{0};
 };
 
+class ThreeDigitsTimesOneDigit : public RandomDistributionGenerator
+{
+public:
+    ThreeDigitsTimesOneDigit();
+    virtual ~ThreeDigitsTimesOneDigit() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1;
+    int m_num2;
+};
+
+class EstimateGrowth : public RandomDistributionGenerator
+{
+public:
+    EstimateGrowth();
+    virtual ~EstimateGrowth() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+    virtual bool checkAnswer(const int index) override;
+
+private:
+    int m_num1{0};
+    double m_num2{0};
+    double m_result{0};
+    const double m_threshold{0.01};
+};
+
 class ModeStrategy
 {
 public:

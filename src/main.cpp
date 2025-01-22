@@ -49,8 +49,10 @@ int main()
             std::cout << "4. three digits divide two digits : 12 厂 123" << std::endl;
             std::cout << "5. fraction compare : 1/2 ? 1/3" << std::endl;
             std::cout << "6. PercentageConvertToFraction : 12%" << std::endl;
+            std::cout << "7. three digits times one digits : 123 * 1" << std::endl;
+            std::cout << "8. estimate growth : 1234 5.6%" << std::endl;
 
-            std::cout << "please input mode (1 - 5), or input 'quit' to exit: ";
+            std::cout << "please input mode (1 - 8), or input 'quit' to exit: ";
             std::cin >> input;
 
             if (input == "quit")
@@ -82,6 +84,14 @@ int main()
             else if (input == "6")
             {
                 context.getStrategy()->setMode(std::make_unique<PercentageConvertToFraction>());
+            }
+            else if (input == "7")
+            {
+                context.getStrategy()->setMode(std::make_unique<ThreeDigitsTimesOneDigit>());
+            }
+            else if (input == "8")
+            {
+                context.getStrategy()->setMode(std::make_unique<EstimateGrowth>());
             }
             else
             {

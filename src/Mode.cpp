@@ -405,3 +405,58 @@ bool PercentageConvertToFraction::checkAnswer(const int index)
     iss >> fractionStr;
     return std::stod(m_response[index]) == std::stod(fractionStr);
 }
+
+ThreeDigitsTimesOneDigit::ThreeDigitsTimesOneDigit()
+    : RandomDistributionGenerator(Range(100, 999), Range(2, 9)) {}
+
+std::string ThreeDigitsTimesOneDigit::generateQuestion()
+{
+    m_num1 = m_numDists[0](m_gen);
+    m_num2 = m_numDists[1](m_gen);
+
+    return std::to_string(m_num1) + " * " + std::to_string(m_num2);
+}
+
+std::string ThreeDigitsTimesOneDigit::generateAnswer()
+{
+    return std::to_string(m_num1 * m_num2);
+}
+
+EstimateGrowth::EstimateGrowth() : RandomDistributionGenerator(Range(1000, 100000), Range(50, 100)) {}
+
+std::string EstimateGrowth::generateQuestion()
+{
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+
+    m_num1 = m_numDists[0](m_gen);
+    m_num2 = m_numDists[1](m_gen) / 10.0;
+
+    oss << "A: " << m_num1 << "  r: " << m_num2;
+
+    return oss.str();
+}
+
+std::string EstimateGrowth::generateAnswer()
+{
+    m_result = m_num1 / (1 + m_num2 / 100) * (m_num2 / 100);
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+    oss << m_result;
+
+    return oss.str();
+}
+
+bool EstimateGrowth::checkAnswer(const int index)
+{
+    auto response = std::stoi(m_response[index]);
+    auto error = std::abs(m_result - response) / m_result;
+    std::cout << "error rate: " << error * 100 << "%" << std::endl;
+
+    if (error > m_threshold)
+    {
+        return false;
+    }
+
+    return true;
+}
