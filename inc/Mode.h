@@ -199,6 +199,9 @@ public:
 
 protected:
     std::unique_ptr<BaseMode> m_mode{nullptr};
+
+private:
+    bool m_onStart{true};
 };
 
 class RunningMode : public ModeStrategy

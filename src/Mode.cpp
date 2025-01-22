@@ -7,6 +7,7 @@
 void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
 {
     m_mode = std::move(mode);
+    m_onStart = true;
 }
 
 bool ModeStrategy::processInput()
@@ -14,14 +15,11 @@ bool ModeStrategy::processInput()
     std::string str;
     std::cout << "input:";
 
-    // clear input cache for the first time input after start
-    static bool onStart = true;
-
-    if (onStart)
+    if (m_onStart)
     {
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.clear();
-        onStart = false;
+        m_onStart = false;
     }
 
     auto start = std::chrono::high_resolution_clock::now();
