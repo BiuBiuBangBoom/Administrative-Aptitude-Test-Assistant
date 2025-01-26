@@ -22,37 +22,37 @@
 
 // utility functions
 // generate color font string with given color
-std::string greenStr(std::string str)
+inline std::string greenStr(std::string str)
 {
     return GREEN_COLOR_FONT + str + RESET_COLOR_FONT;
 }
 
-std::string redStr(std::string str)
+inline std::string redStr(std::string str)
 {
     return RED_COLOR_FONT + str + RESET_COLOR_FONT;
 }
 
-std::string yellowStr(std::string str)
+inline std::string yellowStr(std::string str)
 {
     return YELLOW_COLOR_FONT + str + RESET_COLOR_FONT;
 }
 
-std::string blueStr(std::string str)
+inline std::string blueStr(std::string str)
 {
     return BLUE_COLOR_FONT + str + RESET_COLOR_FONT;
 }
 
-std::string magentaStr(std::string str)
+inline std::string magentaStr(std::string str)
 {
     return MAGENTA_COLOR_FONT + str + RESET_COLOR_FONT;
 }
 
-std::string cyanStr(std::string str)
+inline std::string cyanStr(std::string str)
 {
     return CYAN_COLOR_FONT + str + RESET_COLOR_FONT;
 }
 
-std::string whiteStr(std::string str)
+inline std::string whiteStr(std::string str)
 {
     return WHITE_COLOR_FONT + str + RESET_COLOR_FONT;
 }

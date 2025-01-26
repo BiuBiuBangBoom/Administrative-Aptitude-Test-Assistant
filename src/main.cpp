@@ -1,4 +1,8 @@
+#include <string>
+#include <iostream>
+
 #include "Context.h"
+#include "Mode.h"
 
 int main()
 {
@@ -51,6 +55,7 @@ int main()
             std::cout << "6. PercentageConvertToFraction : 12%" << std::endl;
             std::cout << "7. three digits times one digits : 123 * 1" << std::endl;
             std::cout << "8. estimate growth : 1234 5.6%" << std::endl;
+            std::cout << "9. two digits substaction one digit : 12 - 3" << std::endl;
 
             std::cout << "please input mode (1 - 8), or input 'quit' to exit: ";
             std::cin >> input;
@@ -61,40 +66,43 @@ int main()
                 break;
             }
 
-            if (input == "1")
+            switch (std::stoi(input))
             {
+            case 1:
                 context.getStrategy()->setMode(std::make_unique<TwoDigitsTimesOneDigit>());
-            }
-            else if (input == "2")
-            {
+                break;
+            case 2:
                 context.getStrategy()->setMode(std::make_unique<OneDigitPlusOneDigit>());
-            }
-            else if (input == "3")
-            {
+                break;
+            case 3:
                 context.getStrategy()->setMode(std::make_unique<OneDigitTimesOneDigit>());
-            }
-            else if (input == "4")
-            {
+                break;
+
+            case 4:
                 context.getStrategy()->setMode(std::make_unique<ThreeDigitsDivideTwoDigits>());
-            }
-            else if (input == "5")
-            {
+                break;
+
+            case 5:
                 context.getStrategy()->setMode(std::make_unique<FractionCompare>());
-            }
-            else if (input == "6")
-            {
+                break;
+
+            case 6:
                 context.getStrategy()->setMode(std::make_unique<PercentageConvertToFraction>());
-            }
-            else if (input == "7")
-            {
+                break;
+
+            case 7:
                 context.getStrategy()->setMode(std::make_unique<ThreeDigitsTimesOneDigit>());
-            }
-            else if (input == "8")
-            {
+                break;
+
+            case 8:
                 context.getStrategy()->setMode(std::make_unique<EstimateGrowth>());
-            }
-            else
-            {
+                break;
+
+            case 9:
+                context.getStrategy()->setMode(std::make_unique<TwoDigitsSubOneDigit>());
+                break;
+
+            default:
                 std::cout << "invalid mode" << std::endl;
                 continue;
             }

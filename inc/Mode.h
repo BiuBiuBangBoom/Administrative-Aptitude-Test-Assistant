@@ -1,16 +1,10 @@
 #pragma once
 
-#include <algorithm>
-#include <chrono>
-#include <iomanip>
-#include <memory>
-#include <numeric>
-#include <random>
-#include <vector>
 #include <string>
-#include <iostream>
-#include <utility>
+#include <iomanip>
+#include <random>
 #include <set>
+#include <vector>
 
 class BaseMode
 {
@@ -56,6 +50,9 @@ public:
     RandomDistributionGenerator(Args... ranges);
 
 protected:
+    int getRandomNumFromDistribution(const int index);
+
+private:
     std::vector<std::uniform_int_distribution<>> m_numDists;
 };
 
@@ -70,8 +67,8 @@ private:
     virtual std::string generateAnswer() override;
 
 private:
-    int m_num1;
-    int m_num2;
+    int m_num1{};
+    int m_num2{};
 };
 
 class OneDigitPlusOneDigit : public RandomDistributionGenerator
@@ -85,8 +82,8 @@ private:
     virtual std::string generateAnswer() override;
 
 private:
-    int m_num1;
-    int m_num2;
+    int m_num1{};
+    int m_num2{};
 };
 
 class OneDigitTimesOneDigit : public RandomDistributionGenerator
@@ -100,8 +97,8 @@ private:
     virtual std::string generateAnswer() override;
 
 private:
-    int m_num1;
-    int m_num2;
+    int m_num1{};
+    int m_num2{};
 };
 
 class ThreeDigitsDivideTwoDigits : public RandomDistributionGenerator
@@ -115,8 +112,8 @@ private:
     virtual std::string generateAnswer() override;
 
 private:
-    int m_num1;
-    int m_num2;
+    int m_num1{};
+    int m_num2{};
 };
 
 class FractionCompare : public RandomDistributionGenerator
@@ -164,8 +161,8 @@ private:
     virtual std::string generateAnswer() override;
 
 private:
-    int m_num1;
-    int m_num2;
+    int m_num1{};
+    int m_num2{};
 };
 
 class EstimateGrowth : public RandomDistributionGenerator
@@ -186,50 +183,32 @@ private:
     const double m_threshold{0.01};
 };
 
-class ModeStrategy
+class TwoDigitsSubOneDigit : public RandomDistributionGenerator
 {
 public:
-    virtual void execute() = 0;
-
-    virtual void setMode(std::unique_ptr<BaseMode> mode);
-
-    virtual ~ModeStrategy() = default;
-
-    virtual bool processInput();
-
-protected:
-    std::unique_ptr<BaseMode> m_mode{nullptr};
+    TwoDigitsSubOneDigit();
+    virtual ~TwoDigitsSubOneDigit() = default;
 
 private:
-    bool m_onStart{true};
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1{};
+    int m_num2{};
 };
 
-class RunningMode : public ModeStrategy
+class OneDigitAddOneDigit : public RandomDistributionGenerator
 {
 public:
-    RunningMode() = default;
+    OneDigitAddOneDigit();
+    virtual ~OneDigitAddOneDigit() = default;
 
-    virtual ~RunningMode() = default;
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
 
-    virtual void execute() override;
-};
-
-class RunningAndTestMode : public ModeStrategy
-{
-public:
-    RunningAndTestMode() = default;
-
-    virtual ~RunningAndTestMode() = default;
-
-    virtual void execute() override;
-};
-
-class ExaminationMode : public ModeStrategy
-{
-public:
-    ExaminationMode() = default;
-
-    virtual ~ExaminationMode() = default;
-
-    virtual void execute() override;
+private:
+    int m_num1{};
+    int m_num2{};
 };
