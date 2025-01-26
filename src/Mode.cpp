@@ -1,130 +1,15 @@
 #include "Mode.h"
 #include "Common.h"
 
-#include <vector>
 #include <sstream>
-
-void ModeStrategy::setMode(std::unique_ptr<BaseMode> mode)
-{
-    m_mode = std::move(mode);
-    m_onStart = true;
-}
-
-bool ModeStrategy::processInput()
-{
-    std::string str;
-    std::cout << "input:";
-
-    if (m_onStart)
-    {
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cin.clear();
-        m_onStart = false;
-    }
-
-    auto start = std::chrono::high_resolution_clock::now();
-    std::getline(std::cin, str);
-    auto end = std::chrono::high_resolution_clock::now();
-
-    if (str == "quit")
-    {
-        return false;
-    }
-
-    auto costTime =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
-            .count();
-
-    m_mode->m_costTime.push_back(costTime);
-    m_mode->m_response.push_back(str);
-
-    return true;
-}
-
-void RunningMode::execute()
-{
-    bool continueFlag = true;
-    auto index = 0;
-
-    while (continueFlag)
-    {
-        std::cout << "-------------------------------------------" << std::endl;
-
-        std::cout << "question " << index + 1 << std::endl;
-
-        m_mode->generateAndPrintQuestion();
-        continueFlag = processInput();
-
-        if (continueFlag)
-        {
-            std::cout << "correct answer: " << m_mode->m_answer[index] << std::endl;
-            std::cout << "cost time:      " << std::fixed << std::setprecision(3)
-                      << static_cast<double>(m_mode->m_costTime[index]) / 1000 << "s"
-                      << std::endl;
-        }
-
-        index++;
-    }
-}
-
-void RunningAndTestMode::execute()
-{
-    bool continueFlag = true;
-    auto index = 0;
-
-    while (continueFlag)
-    {
-        std::cout << "-------------------------------------------" << std::endl;
-
-        std::cout << "question " << index + 1 << std::endl;
-
-        m_mode->generateAndPrintQuestion();
-        continueFlag = processInput();
-
-        if (continueFlag)
-        {
-            std::cout << "correct answer: " << m_mode->m_answer[index] << std::endl;
-            std::cout << "cost time:      " << std::fixed << std::setprecision(3)
-                      << static_cast<double>(m_mode->m_costTime[index]) / 1000 << "s"
-                      << std::endl;
-
-            if (m_mode->checkAnswer(index))
-            {
-                std::cout << greenStr("correct") << std::endl;
-            }
-            else
-            {
-                std::cout << redStr("wrong") << std::endl;
-            }
-        }
-
-        index++;
-    }
-
-    m_mode->printStatics();
-}
-
-void ExaminationMode::execute()
-{
-    bool continueFlag = true;
-
-    auto index = 0;
-
-    while (continueFlag)
-    {
-        std::cout << "question " << index + 1 << std::endl;
-
-        m_mode->generateAndPrintQuestion();
-
-        continueFlag = processInput();
-
-        std::cout << "-------------------------------------------" << std::endl;
-
-        index++;
-    }
-
-    m_mode->printStatics();
-}
+#include <algorithm>
+#include <chrono>
+#include <memory>
+#include <numeric>
+#include <vector>
+#include <iostream>
+#include <utility>
+#include <set>
 
 bool BaseMode::checkAnswer(const int index)
 {
@@ -207,13 +92,23 @@ void BaseMode::generateAndPrintQuestion()
     m_answer.push_back(answerStr);
 }
 
+int RandomDistributionGenerator::getRandomNumFromDistribution(const int index)
+{
+    if (index < 0 || index > m_numDists.size())
+    {
+        return 0;
+    }
+
+    return m_numDists[index](m_gen);
+}
+
 TwoDigitsTimesOneDigit::TwoDigitsTimesOneDigit()
     : RandomDistributionGenerator(Range(11, 99), Range(2, 9)) {}
 
 std::string TwoDigitsTimesOneDigit::generateQuestion()
 {
-    m_num1 = m_numDists[0](m_gen);
-    m_num2 = m_numDists[1](m_gen);
+    m_num1 = getRandomNumFromDistribution(0);
+    m_num2 = getRandomNumFromDistribution(1);
 
     return std::to_string(m_num1) + " * " + std::to_string(m_num2);
 }
@@ -224,12 +119,13 @@ std::string TwoDigitsTimesOneDigit::generateAnswer()
 }
 
 OneDigitPlusOneDigit::OneDigitPlusOneDigit()
-    : RandomDistributionGenerator(Range(1, 9), Range(1, 9)) {}
+    : RandomDistributionGenerator(Range(1, 9)) {}
 
 std::string OneDigitPlusOneDigit::generateQuestion()
 {
-    m_num1 = m_numDists[0](m_gen);
-    m_num2 = m_numDists[1](m_gen);
+    m_num1 = getRandomNumFromDistribution(0);
+    std::uniform_int_distribution<> dist(10 - m_num1, 9);
+    m_num2 = dist(m_rd);
 
     return std::to_string(m_num1) + " + " + std::to_string(m_num2);
 }
@@ -244,8 +140,8 @@ OneDigitTimesOneDigit::OneDigitTimesOneDigit()
 
 std::string OneDigitTimesOneDigit::generateQuestion()
 {
-    m_num1 = m_numDists[0](m_gen);
-    m_num2 = m_numDists[1](m_gen);
+    m_num1 = getRandomNumFromDistribution(0);
+    m_num2 = getRandomNumFromDistribution(1);
 
     return std::to_string(m_num1) + " * " + std::to_string(m_num2);
 }
@@ -260,8 +156,8 @@ ThreeDigitsDivideTwoDigits::ThreeDigitsDivideTwoDigits()
 
 std::string ThreeDigitsDivideTwoDigits::generateQuestion()
 {
-    m_num1 = m_numDists[0](m_gen);
-    m_num2 = m_numDists[1](m_gen);
+    m_num1 = getRandomNumFromDistribution(0);
+    m_num2 = getRandomNumFromDistribution(1);
 
     return std::to_string(m_num1) + " 厂 " + std::to_string(m_num2);
 }
@@ -292,11 +188,11 @@ FractionCompare::FractionCompare()
 
 std::string FractionCompare::generateQuestion()
 {
-    auto digitsGapBetweentND = m_numDists[1](m_gen);
-    auto digitsGapBetweentFractions = m_numDists[1](m_gen);
+    auto digitsGapBetweentND = getRandomNumFromDistribution(1);
+    auto digitsGapBetweentFractions = getRandomNumFromDistribution(1);
 
-    m_num1Denominator = m_numDists[0](m_gen);
-    m_num2Denominator = m_numDists[0](m_gen);
+    m_num1Denominator = getRandomNumFromDistribution(0);
+    m_num2Denominator = getRandomNumFromDistribution(0);
 
     m_num2Denominator /= static_cast<int>(std::pow(10, digitsGapBetweentFractions));
 
@@ -310,8 +206,8 @@ std::string FractionCompare::generateQuestion()
     }
     else
     {
-        m_num1Numerator = static_cast<double>(m_numDists[0](m_gen)) / static_cast<int>(std::pow(10, digitsGapBetweentND));
-        m_num2Numerator = static_cast<double>(m_numDists[0](m_gen)) / static_cast<int>(std::pow(10, digitsGapBetweentND + digitsGapBetweentFractions));
+        m_num1Numerator = static_cast<double>(getRandomNumFromDistribution(0)) / static_cast<int>(std::pow(10, digitsGapBetweentND));
+        m_num2Numerator = static_cast<double>(getRandomNumFromDistribution(0)) / static_cast<int>(std::pow(10, digitsGapBetweentND + digitsGapBetweentFractions));
     }
 
     // print fraction with the stye of numerator1        numerator2
@@ -360,7 +256,7 @@ PercentageConvertToFraction::PercentageConvertToFraction()
 std::string PercentageConvertToFraction::generateQuestion()
 {
     // use 2 valuable digits to represent the percentage
-    m_percentage = m_numDists[0](m_gen) / 100.0;
+    m_percentage = getRandomNumFromDistribution(0) / 100.0;
 
     return std::to_string(static_cast<double>(m_percentage)) + "%";
 }
@@ -409,8 +305,8 @@ ThreeDigitsTimesOneDigit::ThreeDigitsTimesOneDigit()
 
 std::string ThreeDigitsTimesOneDigit::generateQuestion()
 {
-    m_num1 = m_numDists[0](m_gen);
-    m_num2 = m_numDists[1](m_gen);
+    m_num1 = getRandomNumFromDistribution(0);
+    m_num2 = getRandomNumFromDistribution(1);
 
     return std::to_string(m_num1) + " * " + std::to_string(m_num2);
 }
@@ -427,8 +323,8 @@ std::string EstimateGrowth::generateQuestion()
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2);
 
-    m_num1 = m_numDists[0](m_gen);
-    m_num2 = m_numDists[1](m_gen) / 10.0;
+    m_num1 = getRandomNumFromDistribution(0);
+    m_num2 = getRandomNumFromDistribution(1) / 10.0;
 
     oss << "A: " << m_num1 << "  r: " << m_num2;
 
@@ -457,4 +353,22 @@ bool EstimateGrowth::checkAnswer(const int index)
     }
 
     return true;
+}
+
+TwoDigitsSubOneDigit::TwoDigitsSubOneDigit() : RandomDistributionGenerator(Range(11, 18)) {}
+
+std::string TwoDigitsSubOneDigit::generateQuestion()
+{
+    m_num1 = getRandomNumFromDistribution(0);
+    std::uniform_int_distribution<> dist(m_num1 - 9, 9);
+    m_num2 = dist(m_rd);
+
+    std::string qStr = std::to_string(m_num1) + " - " + std::to_string(m_num2);
+
+    return qStr;
+}
+
+std::string TwoDigitsSubOneDigit::generateAnswer()
+{
+    return std::to_string(m_num1 - m_num2);
 }

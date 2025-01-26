@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Mode.h"
+#include <memory>
+
+#include "Strategy.h"
 
 class Context
 {
