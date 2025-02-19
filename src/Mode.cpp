@@ -119,12 +119,12 @@ std::string TwoDigitsTimesOneDigit::generateAnswer()
 }
 
 OneDigitPlusOneDigit::OneDigitPlusOneDigit()
-    : RandomDistributionGenerator(Range(1, 9)) {}
+    : RandomDistributionGenerator(Range(2, 9)) {}
 
 std::string OneDigitPlusOneDigit::generateQuestion()
 {
     m_num1 = getRandomNumFromDistribution(0);
-    std::uniform_int_distribution<> dist(10 - m_num1, 9);
+    std::uniform_int_distribution<> dist(11 - m_num1, 9);
     m_num2 = dist(m_rd);
 
     return std::to_string(m_num1) + " + " + std::to_string(m_num2);
@@ -363,12 +363,37 @@ std::string TwoDigitsSubOneDigit::generateQuestion()
     std::uniform_int_distribution<> dist(m_num1 - 9, 9);
     m_num2 = dist(m_rd);
 
-    std::string qStr = std::to_string(m_num1) + " - " + std::to_string(m_num2);
-
+    std::string qStr = "()" + std::to_string(m_num1 % 10);
+    qStr += " - " + std::to_string(m_num2);
     return qStr;
 }
 
 std::string TwoDigitsSubOneDigit::generateAnswer()
 {
     return std::to_string(m_num1 - m_num2);
+}
+
+PowerNumber::PowerNumber() : RandomDistributionGenerator(Range(1, 19)) {}
+
+std::string PowerNumber::generateQuestion()
+{
+    m_num1 = getRandomNumFromDistribution(0);
+
+    if (m_num1 < 10)
+    {
+        m_num2 = 3;
+    }
+    else
+    {
+        m_num2 = 2;
+    }
+
+    auto powerNumber = static_cast<int>(std::pow(m_num1, m_num2));
+
+    return std::to_string(powerNumber);
+}
+
+std::string PowerNumber::generateAnswer()
+{
+    return std::to_string(m_num1) + " " + std::to_string(m_num2);
 }

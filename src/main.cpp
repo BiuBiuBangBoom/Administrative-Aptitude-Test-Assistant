@@ -47,17 +47,18 @@ int main()
         while (true)
         {
             std::cout << "mode list:" << std::endl;
-            std::cout << "1. two digits times one digits : 12 * 1" << std::endl;
-            std::cout << "2. one digits plus one digits : 1 + 2" << std::endl;
-            std::cout << "3. one digits times one digits : 1 * 2" << std::endl;
-            std::cout << "4. three digits divide two digits : 12 厂 123" << std::endl;
-            std::cout << "5. fraction compare : 1/2 ? 1/3" << std::endl;
-            std::cout << "6. PercentageConvertToFraction : 12%" << std::endl;
-            std::cout << "7. three digits times one digits : 123 * 1" << std::endl;
-            std::cout << "8. estimate growth : 1234 5.6%" << std::endl;
-            std::cout << "9. two digits substaction one digit : 12 - 3" << std::endl;
+            std::cout << "1.  two digits times one digits : 12 * 1" << std::endl;
+            std::cout << "2.  one digits plus one digits : 1 + 2" << std::endl;
+            std::cout << "3.  one digits times one digits : 1 * 2" << std::endl;
+            std::cout << "4.  three digits divide two digits : 12 厂 123" << std::endl;
+            std::cout << "5.  fraction compare : 1/2 ? 1/3" << std::endl;
+            std::cout << "6.  PercentageConvertToFraction : 12%" << std::endl;
+            std::cout << "7.  three digits times one digits : 123 * 1" << std::endl;
+            std::cout << "8.  estimate growth : 1234 5.6%" << std::endl;
+            std::cout << "9.  two digits substaction one digit : 12 - 3" << std::endl;
+            std::cout << "10. power number : 256" << std::endl;
 
-            std::cout << "please input mode (1 - 8), or input 'quit' to exit: ";
+            std::cout << "please input mode (1 - 10), or input 'quit' to exit: ";
             std::cin >> input;
 
             if (input == "quit")
@@ -100,6 +101,10 @@ int main()
 
             case 9:
                 context.getStrategy()->setMode(std::make_unique<TwoDigitsSubOneDigit>());
+                break;
+
+            case 10:
+                context.getStrategy()->setMode(std::make_unique<PowerNumber>());
                 break;
 
             default:

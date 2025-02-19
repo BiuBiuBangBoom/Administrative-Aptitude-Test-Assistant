@@ -212,3 +212,18 @@ private:
     int m_num1{};
     int m_num2{};
 };
+
+class PowerNumber : public RandomDistributionGenerator
+{
+public:
+    PowerNumber();
+    virtual ~PowerNumber() = default;
+
+private:
+    virtual std::string generateQuestion() override;
+    virtual std::string generateAnswer() override;
+
+private:
+    int m_num1{};
+    int m_num2{};
+};
