@@ -1,10 +1,79 @@
-#include <string>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
 
 #include "Context.h"
 #include "Mode.h"
 
-int main()
+void test()
+{
+    std::string userInputStr;
+
+    while (userInputStr != "quit")
+    {
+        srand(time(0)); // 初始化随机种子
+
+        int numbers[6]; // 存储生成的6个三位数
+
+        // 生成6个随机三位数
+        for (int i = 0; i < 6; ++i)
+        {
+            numbers[i] = rand() % 900 + 100; // 100-999范围内的随机数
+        }
+
+        // 打印生成的数字
+        std::cout << "随机生成的6个三位数为：";
+        for (int num : numbers)
+        {
+            std::cout << num << " ";
+        }
+        std::cout << std::endl;
+
+        // 计算前两位叠加之和
+        int sum = 0;
+        for (int num : numbers)
+        {
+            int thirdDigit = num % 10; // 获取个位数（第三位）
+            int firstTwo = num / 10;   // 原始前两位数
+
+            // 四舍五入处理
+            if (thirdDigit >= 5)
+            {
+                firstTwo++; // 第三位≥5时前两位进位
+            }
+            sum += firstTwo;
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        std::cout << "请输入您的计算结果：";
+        std::cin >> userInputStr;
+
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+
+        if (userInputStr == "quit")
+        {
+            break;
+        }
+
+        auto userInput = std::stoi(userInputStr);
+
+        std::cout << "\n====== 验证结果 ======\n"
+                  << "您的答案：" << userInput << std::endl
+                  << "正确答案：" << sum << std::endl
+                  << "耗时：" << std::fixed << std::setprecision(2) << time_span.count() << "秒\n"
+                  << "验证结果：" << (userInput == sum ? "✓ 通过" : "✗ 未通过")
+                  << "\n======================" << std::endl;
+    }
+
+    return;
+}
+
+void process()
 {
     Context context;
     std::string input;
@@ -116,5 +185,10 @@ int main()
         }
     }
 
-    return 0;
+    return;
+}
+
+int main()
+{
+    process();
 }
